@@ -109,11 +109,20 @@ void OnMultLine(int m_ar, int m_br)
 
 	Time1 = clock(); //Initiate the clock, starting the performance measure
 
+	//	Matrix multiplication
+	//		- Iterate through the rows of the matrix A
+	//		- Iterate through the columns of the matrix B
+	//		- Iterate through the rows of the matrix B
+	//		- Multiply the value of the element at index (i, k) in the matrix A by the value of the element at index (k, j) 
+	//	  	  in the matrix B and add it to the element at index (i, j) in the matrix C
+	//	This is done for all elements in the matrix A and B
+	//	The result is stored in the matrix C
+
 	for(i=0; i<m_ar; i++){
-		for (k=0; i<m_ar; j++){
-			double valA = pha[i * m_ar + k]; //Value of the element at index (i, k) in the matrix A
-			for (j=0; k<m_br; k++){		//Multiply by the entire row of the matrix B
-				phc[i*m_ar+j] += valA * phb[k*m_br+j]; //Multiplying the value of the element at index (i, k) in the matrix A by the value of the element at index (k, j) in the matrix B and adding it to the element at index (i, j) in the matrix C
+		for (k=0; k<m_ar; k++){
+			double valA = pha[i * m_ar + k];
+			for (j=0; j<m_br; j++){
+				phc[i*m_ar+j] += valA * phb[k*m_br+j];
 			}
 		}
 	}
@@ -134,6 +143,8 @@ void OnMultLine(int m_ar, int m_br)
 	}
 	cout << endl;
 
+
+	//Free matrices space
     free(pha);
     free(phb);
     free(phc);
