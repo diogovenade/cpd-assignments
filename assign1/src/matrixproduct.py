@@ -1,5 +1,4 @@
 import time
-import numpy as np
 
 def on_mult(m_ar, m_br):
     """Standard matrix multiplication algorithm (i,j,k order)"""
@@ -90,7 +89,7 @@ def on_mult_block(m_ar, m_br, bk_size):
     print(" ".join(f"{phc[j]}" for j in range(min(10, m_br))))
 
 def main():
-    """Main function to handle user inputs similar to C++ version"""
+    """Main function to handle user inputs"""
     print("Matrix Multiplication")
     print("1. Standard matrix multiplication")
     print("2. Line-by-line matrix multiplication")
@@ -98,21 +97,15 @@ def main():
     choice = int(input("Enter choice: "))
     
     if choice == 1:
-        m_ar = int(input("Enter matrix A rows: "))
-        m_br = int(input("Enter matrix B rows: "))
-        print("Calculating...")
-        on_mult(m_ar, m_br)
+        d = int(input("Dimensions: lins=cols ? "))
+        on_mult(d, d)
     elif choice == 2:
-        m_ar = int(input("Enter matrix A rows: "))
-        m_br = int(input("Enter matrix B rows: "))
-        print("Calculating...")
-        on_mult_line(m_ar, m_br)
+        d = int(input("Dimensions: lins=cols ? "))
+        on_mult(d, d)
     elif choice == 3:
-        m_ar = int(input("Enter matrix A rows: "))
-        m_br = int(input("Enter matrix B rows: "))
+        d = int(input("Dimensions: lins=cols ? "))
         bk_size = int(input("Enter block size: "))
-        print("Calculating...")
-        on_mult_block(m_ar, m_br, bk_size)
+        on_mult_block(d, d, bk_size)
     else:
         print("Invalid choice")
 
