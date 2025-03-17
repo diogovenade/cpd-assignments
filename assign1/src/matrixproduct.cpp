@@ -36,6 +36,12 @@ void OnMult(int m_ar, int m_br)
 	for(i=0; i<m_br; i++)
 		for(j=0; j<m_br; j++)
 			phb[i*m_br + j] = (double)(i+1);
+	
+	for (i = 0; i < m_ar; i++) {
+		for (j = 0; j < m_ar; j++) {
+			phc[i * m_ar + j] = 0.0;
+		}
+	}
 
 
 
@@ -105,6 +111,12 @@ void OnMultLine(int m_ar, int m_br)
             phb[i * m_br + j] = i + 1;
 		}
 	}
+
+	for (i = 0; i < m_ar; i++) {
+        for (j = 0; j < m_ar; j++) {
+            phc[i * m_ar + j] = 0.0;
+        }
+    }
 
 
 	Time1 = clock(); //Initiate the clock, starting the performance measure
@@ -179,6 +191,12 @@ void OnMultBlock(int m_ar, int m_br, int bkSize)
             phb[i * m_br + j] = i + 1;
 		}
 	}
+
+	for (i = 0; i < m_ar; i++) {
+        for (j = 0; j < m_ar; j++) {
+            phc[i * m_ar + j] = 0.0;
+        }
+    }
     
     Time1 = clock();
 
