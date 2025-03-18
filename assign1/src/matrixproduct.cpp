@@ -4,6 +4,7 @@
 #include <time.h>
 #include <cstdlib>
 #include <papi.h>
+#include <omp.h>
 
 using namespace std;
 
@@ -237,7 +238,7 @@ void OnMultBlock(int m_ar, int m_br, int bkSize)
 
 void OnMultLineParA(int m_ar, int m_br)
 {
-    SYSTEMTIME Time1, Time2;
+    double Time1, Time2;
 
 	char st[100];
 	int i, j, k;
@@ -270,7 +271,7 @@ void OnMultLineParA(int m_ar, int m_br)
     }
 
 
-	Time1 = clock();
+	Time1 = omp_get_wtime();
 
 	# pragma omp parallel for
 	for(i=0; i<m_ar; i++){
@@ -282,10 +283,10 @@ void OnMultLineParA(int m_ar, int m_br)
 		}
 	}
 
-	Time2 = clock();
+	Time2 = omp_get_wtime();
 
 
-	sprintf(st, "Time: %3.3f seconds\n", (double)(Time2 - Time1) / CLOCKS_PER_SEC);
+	sprintf(st, "Time: %3.3f seconds\n", Time2 - Time1);
 	cout << st; 
 
 
@@ -307,7 +308,7 @@ void OnMultLineParA(int m_ar, int m_br)
 
 void OnMultLineParB(int m_ar, int m_br)
 {
-    SYSTEMTIME Time1, Time2;
+    double Time1, Time2;
 
 	char st[100];
 	int i, j, k;
@@ -340,23 +341,25 @@ void OnMultLineParB(int m_ar, int m_br)
     }
 
 
-	Time1 = clock();
+	Time1 = omp_get_wtime();
 
-	# pragma omp parallel
+	double temp;
+
+	#pragma omp parallel private(i, k, temp)
 	for(i=0; i<m_ar; i++){
 		for (k=0; k<m_ar; k++){
-			double valA = pha[i * m_ar + k];
-			# pragma omp for
+			temp = pha[i * m_ar + k];
+			#pragma omp for
 			for (j=0; j<m_br; j++){
-				phc[i*m_ar+j] += valA * phb[k*m_br+j];
+				phc[i*m_ar+j] += temp * phb[k*m_br+j];
 			}
 		}
 	}
 
-	Time2 = clock();
+	Time2 = omp_get_wtime();
 
 
-	sprintf(st, "Time: %3.3f seconds\n", (double)(Time2 - Time1) / CLOCKS_PER_SEC);
+	sprintf(st, "Time: %3.3f seconds\n", Time2 - Time1);
 	cout << st; 
 
 
@@ -432,6 +435,8 @@ int main (int argc, char *argv[])
 		cout << endl << "1. Multiplication" << endl;
 		cout << "2. Line Multiplication" << endl;
 		cout << "3. Block Multiplication" << endl;
+		cout << "4. Line Multiplication (Parallel A)" << endl;
+		cout << "5. Line Multiplication (Parallel B)" << endl;
 		cout << "Selection?: ";
 		cin >>op;
 		if (op == 0)
@@ -456,6 +461,12 @@ int main (int argc, char *argv[])
 				cout << "Block Size? ";
 				cin >> blockSize;
 				OnMultBlock(lin, col, blockSize);  
+				break;
+			case 4:
+				OnMultLineParA(lin, col);  
+				break;
+			case 5:
+				OnMultLineParB(lin, col);  
 				break;
 
 		}
