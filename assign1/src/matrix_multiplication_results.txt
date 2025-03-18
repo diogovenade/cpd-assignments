@@ -1,56 +1,95 @@
+Running tests for OnMult from 600 to 3000 with 400 step
 Running tests for matrix size: 600x600
-OnMult:
-L1 DCM: 244753555 
-L2 DCM: 39342904
-OnMultLine:
-L1 DCM: 27106069 
-L2 DCM: 59581005 
+Selection?: Dimensions: lins=cols ? Time: 0.194 seconds
+L1 DCM: 244558815 
+L2 DCM: 39603442 
 --------------------------------------------------
 Running tests for matrix size: 1000x1000
-OnMult:
-L1 DCM: 1227806400 
-L2 DCM: 296138963
-OnMultLine:
-L1 DCM: 125584249 
-L2 DCM: 269232663 
+Selection?: Dimensions: lins=cols ? Time: 1.477 seconds
+L1 DCM: 1228599170 
+L2 DCM: 237436741 
 --------------------------------------------------
 Running tests for matrix size: 1400x1400
-OnMult:
-L1 DCM: 3415331786 
-L2 DCM: 1537448552 
-OnMultLine:
-L1 DCM: 345737108 
-L2 DCM: 726302073 
+Selection?: Dimensions: lins=cols ? Time: 3.655 seconds
+L1 DCM: 3486717625 
+L2 DCM: 1235011647 
 --------------------------------------------------
 Running tests for matrix size: 1800x1800
-OnMult:
-L1 DCM: 9086720529 
-L2 DCM: 7848610245 
-OnMultLine:
-L1 DCM: 746271674 
-L2 DCM: 1531288758 
+Selection?: Dimensions: lins=cols ? Time: 17.686 seconds
+L1 DCM: 9094614918 
+L2 DCM: 7515869914 
 --------------------------------------------------
 Running tests for matrix size: 2200x2200
-OnMult:
-L1 DCM: 17630340761 
-L2 DCM: 23507529326 
-OnMultLine:
-L1 DCM: 2077935766 
-L2 DCM: 2723604713 
+Selection?: Dimensions: lins=cols ? Time: 38.863 seconds
+L1 DCM: 17630889297 
+L2 DCM: 22784864022 
 --------------------------------------------------
 Running tests for matrix size: 2600x2600
-OnMult:
-L1 DCM: 30871984532 
-L2 DCM: 50919883932 
-OnMultLine:
-L1 DCM: 4413362872 
-L2 DCM: 4419184123 
+Selection?: Dimensions: lins=cols ? Time: 69.401 seconds
+L1 DCM: 30905368800 
+L2 DCM: 50848007419 
 --------------------------------------------------
 Running tests for matrix size: 3000x3000
-OnMult:
-L1 DCM: 50290481727 
-L2 DCM: 95997115632 
-OnMultLine:
-L1 DCM: 6780436770 
-L2 DCM: 6563632677 
+Selection?: Dimensions: lins=cols ? Time: 117.580 seconds
+L1 DCM: 50300933538 
+L2 DCM: 94018677748 
 --------------------------------------------------
+Running tests for OnMultLine from 600 to 3000 with 400 step
+Running tests for matrix size: 600x600
+Selection?: Dimensions: lins=cols ? Time: 0.095 seconds
+L1 DCM: 27120466 
+L2 DCM: 59617388 
+--------------------------------------------------
+Running tests for matrix size: 1000x1000
+Selection?: Dimensions: lins=cols ? Time: 0.425 seconds
+L1 DCM: 125774813 
+L2 DCM: 275657244 
+--------------------------------------------------
+Running tests for matrix size: 1400x1400
+Selection?: Dimensions: lins=cols ? Time: 1.390 seconds
+L1 DCM: 346153620 
+L2 DCM: 738738053 
+--------------------------------------------------
+Running tests for matrix size: 1800x1800
+Selection?: Dimensions: lins=cols ? Time: 3.225 seconds
+L1 DCM: 745516565 
+L2 DCM: 1501777843 
+--------------------------------------------------
+Running tests for matrix size: 2200x2200
+Selection?: Dimensions: lins=cols ? Time: 6.005 seconds
+L1 DCM: 2074100040 
+L2 DCM: 2651529235 
+--------------------------------------------------
+Running tests for matrix size: 2600x2600
+Selection?: Dimensions: lins=cols ? Time: 10.341 seconds
+L1 DCM: 4412661417 
+L2 DCM: 4353290344 
+--------------------------------------------------
+Running tests for matrix size: 3000x3000
+Selection?: Dimensions: lins=cols ? Time: 15.916 seconds
+L1 DCM: 6779827979 
+L2 DCM: 6624430243 
+--------------------------------------------------
+Running tests for OnMultLine from 4096 to 10240 with 2048 step
+Running tests for matrix size: 4096x4096
+Selection?: Dimensions: lins=cols ? Time: 40.544 seconds
+L1 DCM: 17605989215 
+L2 DCM: 16528954105 
+--------------------------------------------------
+Running tests for matrix size: 6144x6144
+Selection?: Dimensions: lins=cols ? Time: 137.031 seconds
+L1 DCM: 59438793382 
+L2 DCM: 56341953536 
+--------------------------------------------------
+Running tests for matrix size: 8192x8192
+Selection?: Dimensions: lins=cols ? Time: 328.470 seconds
+L1 DCM: 140686067539 
+L2 DCM: 132293311555 
+--------------------------------------------------
+Running tests for matrix size: 10240x10240
+Selection?: Dimensions: lins=cols ? Time: 646.431 seconds
+L1 DCM: 274814974955 
+L2 DCM: 263141701002 
+--------------------------------------------------
+Running tests for OnMultBlock from 4096 to 10240 with 2048 step \n
+Running tests for matrix size: 4096x4096
