@@ -239,6 +239,13 @@ void OnMultBlock(int m_ar, int m_br, int bkSize)
 
 void OnMultLineParA(int m_ar, int m_br)
 {
+
+	int ret;
+	ret = PAPI_library_init(PAPI_VER_CURRENT);
+
+	if (ret != PAPI_VER_CURRENT)
+		std::cout << "FAIL" << endl;
+
     double Time1, Time2;
 
 	char st[100];
@@ -272,6 +279,18 @@ void OnMultLineParA(int m_ar, int m_br)
         }
     }
 
+	int EventSet = PAPI_NULL;
+    long long values[1];
+
+    ret = PAPI_create_eventset(&EventSet);
+    if (ret != PAPI_OK) cout << "ERROR: create eventset" << endl;
+
+    ret = PAPI_add_event(EventSet, PAPI_DP_OPS);
+    if (ret != PAPI_OK) cout << "ERROR: PAPI_DP_OPS" << endl;
+
+    ret = PAPI_start(EventSet);
+    if (ret != PAPI_OK) cout << "ERROR: Start PAPI" << endl;
+
 
 	Time1 = omp_get_wtime();
 
@@ -287,8 +306,11 @@ void OnMultLineParA(int m_ar, int m_br)
 
 	Time2 = omp_get_wtime();
 
+	ret = PAPI_stop(EventSet, values);
+    if (ret != PAPI_OK) cout << "ERROR: Stop PAPI" << endl;
+
 	double elapsedTime = Time2 - Time1;
-    double mflops = (2.0 * m_ar * m_ar * m_ar) / (elapsedTime * 1e6);
+    double mflops = values[0] / (elapsedTime * 1e6);
 
 
 	sprintf(st, "Time: %3.3f seconds\n", elapsedTime);
@@ -308,6 +330,12 @@ void OnMultLineParA(int m_ar, int m_br)
     free(pha);
     free(phb);
     free(phc);
+
+	ret = PAPI_remove_event(EventSet, PAPI_DP_OPS);
+    if (ret != PAPI_OK) cout << "ERROR: Remove PAPI_DP_OPS" << endl;
+
+    ret = PAPI_destroy_eventset(&EventSet);
+    if (ret != PAPI_OK) cout << "ERROR: Destroy eventset" << endl;
 
 
 }
@@ -346,6 +374,19 @@ void OnMultLineParB(int m_ar, int m_br)
         }
     }
 
+	int EventSet = PAPI_NULL;
+    long long values[1];
+    int ret;
+
+    ret = PAPI_create_eventset(&EventSet);
+    if (ret != PAPI_OK) cout << "ERROR: create eventset" << endl;
+
+    ret = PAPI_add_event(EventSet, PAPI_FP_OPS);
+    if (ret != PAPI_OK) cout << "ERROR: PAPI_FP_OPS" << endl;
+
+    ret = PAPI_start(EventSet);
+    if (ret != PAPI_OK) cout << "ERROR: Start PAPI" << endl;
+
 
 	Time1 = omp_get_wtime();
 
@@ -363,8 +404,12 @@ void OnMultLineParB(int m_ar, int m_br)
 	}
 
 	Time2 = omp_get_wtime();
+
+	ret = PAPI_stop(EventSet, values);
+    if (ret != PAPI_OK) cout << "ERROR: Stop PAPI" << endl;
+
 	double elapsedTime = Time2 - Time1;
-    double mflops = (2.0 * m_ar * m_ar * m_ar) / (elapsedTime * 1e6);
+    double mflops = values[0] / (elapsedTime * 1e6);
 
 
 	sprintf(st, "Time: %3.3f seconds\n", elapsedTime);
@@ -384,6 +429,12 @@ void OnMultLineParB(int m_ar, int m_br)
     free(pha);
     free(phb);
     free(phc);
+
+	ret = PAPI_remove_event(EventSet, PAPI_FP_OPS);
+    if (ret != PAPI_OK) cout << "ERROR: Remove PAPI_FP_OPS" << endl;
+
+    ret = PAPI_destroy_eventset(&EventSet);
+    if (ret != PAPI_OK) cout << "ERROR: Destroy eventset" << endl;
 
 
 }
