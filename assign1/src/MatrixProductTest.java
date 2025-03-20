@@ -6,7 +6,7 @@ public class MatrixProductTest {
 
     public static void main(String[] args) {
         int[] sizes = {600, 1000, 1400, 1800, 2200, 2600, 3000};
-        try (PrintWriter writer = new PrintWriter(new FileWriter("matrix_multiplication_java.txt"))) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("results_java.txt"))) {
             for (int size : sizes) {
                 writer.printf("Matrix size: %dx%d\n", size, size);
                 
