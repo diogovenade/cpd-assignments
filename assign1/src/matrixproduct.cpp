@@ -245,6 +245,7 @@ void OnMultLineParA(int m_ar, int m_br)
 	int i, j, k;
 
 	double *pha, *phb, *phc;
+	double temp;
 	
 
 
@@ -277,18 +278,22 @@ void OnMultLineParA(int m_ar, int m_br)
 	# pragma omp parallel for
 	for(i=0; i<m_ar; i++){
 		for (k=0; k<m_ar; k++){
-			double valA = pha[i * m_ar + k];
+			temp = pha[i * m_ar + k];
 			for (j=0; j<m_br; j++){
-				phc[i*m_ar+j] += valA * phb[k*m_br+j];
+				phc[i*m_ar+j] += temp * phb[k*m_br+j];
 			}
 		}
 	}
 
 	Time2 = omp_get_wtime();
 
+	double elapsedTime = Time2 - Time1;
+    double mflops = (2.0 * m_ar * m_ar * m_ar) / (elapsedTime * 1e6);
 
-	sprintf(st, "Time: %3.3f seconds\n", Time2 - Time1);
-	cout << st; 
+
+	sprintf(st, "Time: %3.3f seconds\n", elapsedTime);
+	cout << st;
+	cout << "MFlops: " << mflops << endl;
 
 
 	// display 10 elements of the result matrix tto verify correctness
@@ -358,10 +363,13 @@ void OnMultLineParB(int m_ar, int m_br)
 	}
 
 	Time2 = omp_get_wtime();
+	double elapsedTime = Time2 - Time1;
+    double mflops = (2.0 * m_ar * m_ar * m_ar) / (elapsedTime * 1e6);
 
 
-	sprintf(st, "Time: %3.3f seconds\n", Time2 - Time1);
-	cout << st; 
+	sprintf(st, "Time: %3.3f seconds\n", elapsedTime);
+	cout << st;
+	cout << "MFlops: " << mflops << endl;
 
 
 	// display 10 elements of the result matrix tto verify correctness
