@@ -120,6 +120,7 @@ void OnMultLine(int m_ar, int m_br)
     }
 
 
+	double temp;
 	Time1 = clock(); //Initiate the clock, starting the performance measure
 
 	//	Matrix multiplication
@@ -133,9 +134,9 @@ void OnMultLine(int m_ar, int m_br)
 
 	for(i=0; i<m_ar; i++){
 		for (k=0; k<m_ar; k++){
-			double valA = pha[i * m_ar + k];
+			temp = pha[i * m_ar + k];
 			for (j=0; j<m_br; j++){
-				phc[i*m_ar+j] += valA * phb[k*m_br+j];
+				phc[i*m_ar+j] += temp * phb[k*m_br+j];
 			}
 		}
 	}
