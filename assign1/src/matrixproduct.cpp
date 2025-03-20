@@ -237,7 +237,7 @@ void OnMultBlock(int m_ar, int m_br, int bkSize)
     free(phc);
 }
 
-void OnMultLineParA(int m_ar, int m_br)
+double OnMultLineParA(int m_ar, int m_br)
 {
 
 	int ret;
@@ -312,10 +312,12 @@ void OnMultLineParA(int m_ar, int m_br)
     free(phb);
     free(phc);
 
+	return elapsedTime;
+
 
 }
 
-void OnMultLineParB(int m_ar, int m_br)
+double OnMultLineParB(int m_ar, int m_br)
 {
     double Time1, Time2;
 
@@ -385,6 +387,8 @@ void OnMultLineParB(int m_ar, int m_br)
     free(pha);
     free(phb);
     free(phc);
+
+	return elapsedTime;
 
 
 }
@@ -464,6 +468,8 @@ int main (int argc, char *argv[])
 		ret = PAPI_start(EventSet);
 		if (ret != PAPI_OK) cout << "ERROR: Start PAPI" << endl;
 
+		double elapsedTime;
+
 		switch (op){
 			case 1: 
 				OnMult(lin, col);
@@ -477,10 +483,10 @@ int main (int argc, char *argv[])
 				OnMultBlock(lin, col, blockSize);  
 				break;
 			case 4:
-				OnMultLineParA(lin, col);  
+				elapsedTime = OnMultLineParA(lin, col);  
 				break;
 			case 5:
-				OnMultLineParB(lin, col);  
+				elapsedTime = OnMultLineParB(lin, col);  
 				break;
 
 		}
@@ -491,7 +497,7 @@ int main (int argc, char *argv[])
   		printf("L2 DCM: %lld \n",values[1]);
 
 		if (op == 4 || op == 5) {
-			printf("DP OPS: %lld \n",values[2]);
+			printf("MFLOPS: %f \n",(double)values[2]/(elapsedTime*1e6));
 		}
 
 		ret = PAPI_reset( EventSet );
