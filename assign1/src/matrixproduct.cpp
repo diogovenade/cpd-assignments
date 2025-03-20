@@ -279,18 +279,6 @@ void OnMultLineParA(int m_ar, int m_br)
         }
     }
 
-	int EventSet = PAPI_NULL;
-    long long values[1];
-
-    ret = PAPI_create_eventset(&EventSet);
-    if (ret != PAPI_OK) cout << "ERROR: create eventset" << endl;
-
-    ret = PAPI_add_event(EventSet, PAPI_DP_OPS);
-    if (ret != PAPI_OK) cout << "ERROR: PAPI_DP_OPS" << endl;
-
-    ret = PAPI_start(EventSet);
-    if (ret != PAPI_OK) cout << "ERROR: Start PAPI" << endl;
-
 
 	Time1 = omp_get_wtime();
 
@@ -306,16 +294,9 @@ void OnMultLineParA(int m_ar, int m_br)
 
 	Time2 = omp_get_wtime();
 
-	ret = PAPI_stop(EventSet, values);
-    if (ret != PAPI_OK) cout << "ERROR: Stop PAPI" << endl;
-
 	double elapsedTime = Time2 - Time1;
-    double mflops = values[0] / (elapsedTime * 1e6);
-
-
 	sprintf(st, "Time: %3.3f seconds\n", elapsedTime);
 	cout << st;
-	cout << "MFlops: " << mflops << endl;
 
 
 	// display 10 elements of the result matrix tto verify correctness
@@ -330,12 +311,6 @@ void OnMultLineParA(int m_ar, int m_br)
     free(pha);
     free(phb);
     free(phc);
-
-	ret = PAPI_remove_event(EventSet, PAPI_DP_OPS);
-    if (ret != PAPI_OK) cout << "ERROR: Remove PAPI_DP_OPS" << endl;
-
-    ret = PAPI_destroy_eventset(&EventSet);
-    if (ret != PAPI_OK) cout << "ERROR: Destroy eventset" << endl;
 
 
 }
@@ -374,19 +349,6 @@ void OnMultLineParB(int m_ar, int m_br)
         }
     }
 
-	int EventSet = PAPI_NULL;
-    long long values[1];
-    int ret;
-
-    ret = PAPI_create_eventset(&EventSet);
-    if (ret != PAPI_OK) cout << "ERROR: create eventset" << endl;
-
-    ret = PAPI_add_event(EventSet, PAPI_FP_OPS);
-    if (ret != PAPI_OK) cout << "ERROR: PAPI_FP_OPS" << endl;
-
-    ret = PAPI_start(EventSet);
-    if (ret != PAPI_OK) cout << "ERROR: Start PAPI" << endl;
-
 
 	Time1 = omp_get_wtime();
 
@@ -405,16 +367,10 @@ void OnMultLineParB(int m_ar, int m_br)
 
 	Time2 = omp_get_wtime();
 
-	ret = PAPI_stop(EventSet, values);
-    if (ret != PAPI_OK) cout << "ERROR: Stop PAPI" << endl;
-
 	double elapsedTime = Time2 - Time1;
-    double mflops = values[0] / (elapsedTime * 1e6);
-
 
 	sprintf(st, "Time: %3.3f seconds\n", elapsedTime);
 	cout << st;
-	cout << "MFlops: " << mflops << endl;
 
 
 	// display 10 elements of the result matrix tto verify correctness
@@ -429,12 +385,6 @@ void OnMultLineParB(int m_ar, int m_br)
     free(pha);
     free(phb);
     free(phc);
-
-	ret = PAPI_remove_event(EventSet, PAPI_FP_OPS);
-    if (ret != PAPI_OK) cout << "ERROR: Remove PAPI_FP_OPS" << endl;
-
-    ret = PAPI_destroy_eventset(&EventSet);
-    if (ret != PAPI_OK) cout << "ERROR: Destroy eventset" << endl;
 
 
 }
@@ -470,7 +420,7 @@ int main (int argc, char *argv[])
 	int op;
 	
 	int EventSet = PAPI_NULL;
-  	long long values[2];
+  	long long values[3];
   	int ret;
 	
 
@@ -489,6 +439,9 @@ int main (int argc, char *argv[])
 
 	ret = PAPI_add_event(EventSet,PAPI_L2_DCM);
 	if (ret != PAPI_OK) cout << "ERROR: PAPI_L2_DCM" << endl;
+
+	ret = PAPI_add_event(EventSet, PAPI_DP_OPS);
+	if (ret != PAPI_OK) cout << "ERROR: PAPI_DP_OPS" << endl;
 
 
 	op=1;
@@ -536,6 +489,10 @@ int main (int argc, char *argv[])
   		if (ret != PAPI_OK) cout << "ERROR: Stop PAPI" << endl;
   		printf("L1 DCM: %lld \n",values[0]);
   		printf("L2 DCM: %lld \n",values[1]);
+
+		if (op == 4 || op == 5) {
+			printf("DP OPS: %lld \n",values[2]);
+		}
 
 		ret = PAPI_reset( EventSet );
 		if ( ret != PAPI_OK )
