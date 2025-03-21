@@ -3,19 +3,19 @@ import java.util.Scanner;
 public class MatrixProduct {
 
     public static void onMult(int m_ar, int m_br) {
-        double[][] pha = new double[m_ar][m_ar];
-        double[][] phb = new double[m_ar][m_ar];
-        double[][] phc = new double[m_ar][m_ar];
+        double[] pha = new double[m_ar * m_ar];
+        double[] phb = new double[m_ar * m_ar];
+        double[] phc = new double[m_ar * m_ar];
 
         for (int i = 0; i < m_ar; i++) {
             for (int j = 0; j < m_ar; j++) {
-                pha[i][j] = 1.0;
+                pha[i * m_ar + j] = 1.0;
             }
         }
 
         for (int i = 0; i < m_br; i++) {
             for (int j = 0; j < m_br; j++) {
-                phb[i][j] = i + 1;
+                phb[i * m_br + j] = i + 1;
             }
         }
 
@@ -27,9 +27,9 @@ public class MatrixProduct {
             for (int j = 0; j < m_br; j++) {
                 temp = 0;
                 for (int k = 0; k < m_ar; k++) {
-                    temp += pha[i][k] * phb[k][j];
+                    temp += pha[i * m_ar + k] * phb[k * m_br + j];
                 }
-                phc[i][j] = temp;
+                phc[i * m_ar + j] = temp;
             }
         }
 
@@ -38,25 +38,25 @@ public class MatrixProduct {
 
         System.out.println("Result matrix:");
         for (int j = 0; j < Math.min(10, m_br); j++) {
-            System.out.print(phc[0][j] + " ");
+            System.out.print(phc[j] + " ");
         }
         System.out.println();
     }
 
     public static void onMultLine(int m_ar, int m_br) {
-        double[][] pha = new double[m_ar][m_ar];
-        double[][] phb = new double[m_ar][m_ar];
-        double[][] phc = new double[m_ar][m_ar];
+        double[] pha = new double[m_ar * m_ar];
+        double[] phb = new double[m_ar * m_ar];
+        double[] phc = new double[m_ar * m_ar];
 
         for (int i = 0; i < m_ar; i++) {
             for (int j = 0; j < m_ar; j++) {
-                pha[i][j] = 1.0;
+                pha[i * m_ar + j] = 1.0;
             }
         }
 
         for (int i = 0; i < m_br; i++) {
             for (int j = 0; j < m_br; j++) {
-                phb[i][j] = i + 1;
+                phb[i * m_br + j] = i + 1;
             }
         }
 
@@ -64,9 +64,9 @@ public class MatrixProduct {
 
         for (int i = 0; i < m_ar; i++) {
             for (int k = 0; k < m_ar; k++) {
-                double valA = pha[i][k];
+                double valA = pha[i * m_ar + k];
                 for (int j = 0; j < m_br; j++) {
-                    phc[i][j] += valA * phb[k][j];
+                    phc[i * m_ar + j] += valA * phb[k * m_br + j];
                 }
             }
         }
@@ -76,7 +76,7 @@ public class MatrixProduct {
 
         System.out.println("Result matrix:");
         for (int j = 0; j < Math.min(10, m_br); j++) {
-            System.out.print(phc[0][j] + " ");
+            System.out.print(phc[j] + " ");
         }
         System.out.println();
     }
