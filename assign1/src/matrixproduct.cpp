@@ -516,6 +516,11 @@ int main (int argc, char *argv[])
 	if ( ret != PAPI_OK )
 		std::cout << "FAIL remove event" << endl; 
 
+	ret = PAPI_remove_event( EventSet, PAPI_DP_OPS );
+	if ( ret != PAPI_OK )
+		std::cout << "FAIL remove event" << endl; 
+	
+
 	ret = PAPI_destroy_eventset( &EventSet );
 	if ( ret != PAPI_OK )
 		std::cout << "FAIL destroy" << endl;
