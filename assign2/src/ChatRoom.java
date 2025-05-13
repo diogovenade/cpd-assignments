@@ -57,8 +57,13 @@ public class ChatRoom {
     }
 
     private void broadcast(String message) {
-        for (ClientSession user : users) {
-            user.out.println(message);
+        lock.lock();
+        try {
+            for (ClientSession user : users) {
+                user.out.println(message);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
