@@ -4,12 +4,15 @@ import java.util.concurrent.locks.*;
 
 public class ChatRoom {
     private final String name;
+    private final boolean isAI;
     private final List<String> messages = new ArrayList<>();
     private final List<ClientSession> users = new ArrayList<>();
     private final Lock lock = new ReentrantLock();
+    private final BotClient botClient = new BotClient("llama3");
 
-    public ChatRoom(String name, boolean ignored) {
+    public ChatRoom(String name, boolean isAI) {
         this.name = name;
+        this.isAI=isAI;
     }
 
     public void addUser(String username, BufferedReader in, PrintWriter out) throws IOException {
@@ -22,6 +25,19 @@ public class ChatRoom {
             for (String msg : messages) out.println(msg);
         } finally {
             lock.unlock();
+        }
+
+        if (isAI) {
+            String intro = botClient.askBot(messages,
+                    "A new user named" + username + " just joined. Welcome the user. If anything was said summarize in 2 sentences what other users has been saying so far. If not just tell him he is the first. Do not say the new user said those things. I want a fast simple response");
+            String botLine = "Bot: " + intro;
+            lock.lock();
+            try {
+                messages.add(botLine);
+                broadcast(botLine);
+            } finally {
+                lock.unlock();
+            }
         }
 
         String line;
