@@ -12,36 +12,39 @@ public class ChatRoom {
         this.name = name;
     }
 
-    public void addUser(String username, BufferedReader in, PrintWriter out) {
+    public void addUser(String username, BufferedReader in, PrintWriter out) throws IOException {
         ClientSession session = new ClientSession(username, out);
         lock.lock();
         try {
             users.add(session);
             broadcast("[" + username + " enters the room]");
+            // replay history
             for (String msg : messages) out.println(msg);
         } finally {
             lock.unlock();
         }
 
-        Thread.startVirtualThread(() -> {
-            try {
-                String line;
-                while ((line = in.readLine()) != null) {
-                    String message = username + ": " + line;
-                    lock.lock();
-                    try {
-                        messages.add(message);
-                        broadcast(message);
-                    } finally {
-                        lock.unlock();
-                    }
-                }
-            } catch (IOException ignored) {
-            } finally {
-                removeUser(session);
+        String line;
+        while ((line = in.readLine()) != null) {
+            if (line.equalsIgnoreCase("\\q")) {
+                // explicit leave command
+                out.println("[You left the room]");
+                break;
             }
-        });
+            String message = username + ": " + line;
+            lock.lock();
+            try {
+                messages.add(message);
+                broadcast(message);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        // once loop exits, clean up
+        removeUser(session);
     }
+
 
     private void removeUser(ClientSession session) {
         lock.lock();

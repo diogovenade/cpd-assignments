@@ -88,6 +88,7 @@ public class ChatServer {
 
                 out.println("Entering room: " + roomName + (isAIRoom ? " (AI)" : ""));
                 room.addUser(username, in, out);
+
                 out.println("Left room: " + roomName);
             }
 
