@@ -14,7 +14,6 @@ public class BotClient {
 
     public String askBot(List<String> historyLines, String userQuery) {
         try {
-            // 1) Build JSON payload manually
             StringBuilder sb = new StringBuilder();
             sb.append("{")
                     .append("\"model\":\"").append(model).append("\",")
@@ -22,19 +21,16 @@ public class BotClient {
                     .append("\"messages\":[")
                     .append("{\"role\":\"system\",\"content\":\"You are a helpful assistant.\"}");
 
-            // Append conversation history
             for (String line : historyLines) {
                 // Skip any bot messages
                 if (line.startsWith("Bot:")) continue;
 
-                // Include full message as-is, e.g. "miguel: Eu gosto de futebol"
                 String content = escapeJson(line.trim());
 
                 sb.append(",{\"role\":\"user\",\"content\":\"").append(content).append("\"}");
             }
 
 
-            // Add user message
             sb.append(",{\"role\":\"user\",\"content\":\"").append(escapeJson(userQuery)).append("\"}");
 
             sb.append("]}");
@@ -69,7 +65,6 @@ public class BotClient {
                 return "[Bot HTTP " + status + ": " + resp + "]";
             }
 
-            // Extract "content" from response JSON
             Pattern p = Pattern.compile("\"content\"\\s*:\\s*\"((?:\\\\\"|[^\"])*)\"");
             Matcher m = p.matcher(resp.toString());
             if (m.find()) {
