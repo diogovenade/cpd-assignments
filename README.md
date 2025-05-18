@@ -8,3 +8,20 @@ Group members:
 2. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
 3. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
 4. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
+
+
+#
+### Compiling
+```bash
+javac -cp ../json-20240303.jar BotClient.java ChatClient.java ChatRoom.java ChatServer.java
+```
+###
+### Running
+#### Server
+```bash
+java -cp .:../json-20240303.jar ChatServer 5000
+```
+#### Client
+```bash
+java -cp .:../json-20240303.jar ChatClient localhost 5000
+```
