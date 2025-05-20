@@ -83,6 +83,20 @@ public class ChatRoom {
             } finally {
                 lock.unlock();
             }
+
+            if (line.toLowerCase().contains("@bot")){
+                botClient.askBotMention(line)
+                        .thenAccept(intro -> {
+                            String botLine = "Bot: " + intro;
+                            lock.lock();
+                            try {
+                                messages.add(botLine);
+                                broadcast(botLine);
+                            } finally {
+                                lock.unlock();
+                            }
+                        });
+            }
         }
 
         // once loop exits, clean up

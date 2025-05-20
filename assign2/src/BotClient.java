@@ -62,4 +62,36 @@ public class BotClient {
             return CompletableFuture.completedFuture("[Bot error: " + e.getMessage() + "]");
         }
     }
+
+    public CompletableFuture<String> askBotMention(String message){
+        try{
+            JSONArray messageArray = new JSONArray();
+            messageArray.put(new JSONObject()
+                    .put("role", "user")
+                    .put("content", message));
+            JSONObject payload = new JSONObject()
+                    .put("model", model)
+                    .put("messages", messageArray)
+                    .put("stream", false);
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + CHAT_ENDPOINT))
+                    .header("Content-Type", "application/json")
+                    .POST(BodyPublishers.ofString(payload.toString()))
+                    .build();
+            return http.sendAsync(req, BodyHandlers.ofString())
+                    .thenApply(resp -> {
+                        try {
+                            JSONObject body = new JSONObject(resp.body());
+                            JSONObject msg = body.getJSONObject("message");
+                            return msg.getString("content");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return "[Bot error: " + e.getMessage() + "]";
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CompletableFuture.completedFuture("[Bot error: " + e.getMessage() + "]");
+        }
+    }
 }
