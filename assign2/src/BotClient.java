@@ -1,92 +1,99 @@
-import java.io.*;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.regex.*;
+import java.net.URI;
+import java.net.http.*;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.util.concurrent.CompletableFuture;
+
+import org.json.JSONArray;  // or your preferred JSON library
+import org.json.JSONObject;
 
 public class BotClient {
-    private static final String API_URL = "http://localhost:11434/api/chat";  // Use /api/chat for chat-style messages
+    private static final String BASE_URL = "http://localhost:11434";
+    private static final String CHAT_ENDPOINT = "/api/chat";
+    private final HttpClient http = HttpClient.newHttpClient();
     private final String model;
 
     public BotClient(String model) {
         this.model = model;
     }
 
-    public String askBot(List<String> historyLines, String userQuery) {
+    /**
+     * Sends a chat request to Ollama and returns the assistant's reply text.
+     *
+     * @param history A JSONArray of past messages, each an object with "role" and "content".
+     * @param userQuery The new user message to send.
+     * @return The assistant's content field from the response.
+     */
+    public CompletableFuture<String> askBotAsync(JSONArray history, String userQuery) {
         try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{")
-                    .append("\"model\":\"").append(model).append("\",")
-                    .append("\"stream\":false,")
-                    .append("\"messages\":[")
-                    .append("{\"role\":\"system\",\"content\":\"You are a helpful assistant.\"}");
 
-            for (String line : historyLines) {
-                // Skip any bot messages
-                if (line.startsWith("Bot:")) continue;
-
-                String content = escapeJson(line.trim());
-
-                sb.append(",{\"role\":\"user\",\"content\":\"").append(content).append("\"}");
+            JSONArray messages = new JSONArray();
+            for (int i = 0; i < history.length(); i++) {
+                messages.put(history.getJSONObject(i));
             }
+            messages.put(new JSONObject()
+                    .put("role", "user")
+                    .put("content", userQuery));
+
+            JSONObject payload = new JSONObject()
+                    .put("model", model)
+                    .put("messages", messages)
+                    .put("stream", false);
 
 
-            sb.append(",{\"role\":\"user\",\"content\":\"").append(escapeJson(userQuery)).append("\"}");
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + CHAT_ENDPOINT))
+                    .header("Content-Type", "application/json")
+                    .POST(BodyPublishers.ofString(payload.toString()))
+                    .build();
 
-            sb.append("]}");
+            return http.sendAsync(req, BodyHandlers.ofString())
+                    .thenApply(resp -> {
+                        try {
+                            JSONObject body = new JSONObject(resp.body());
+                            JSONObject msg = body.getJSONObject("message");
+                            return msg.getString("content");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return "[Bot error: " + e.getMessage() + "]";
+                        }
+                    });
 
-            byte[] payload = sb.toString().getBytes(StandardCharsets.UTF_8);
-
-            HttpURLConnection conn = (HttpURLConnection) URI.create(API_URL).toURL().openConnection();
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            conn.setFixedLengthStreamingMode(payload.length);
-
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(payload);
-            }
-
-            int status = conn.getResponseCode();
-            InputStream stream = (status >= 200 && status < 300)
-                    ? conn.getInputStream()
-                    : conn.getErrorStream();
-
-            StringBuilder resp = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    resp.append(line);
-                }
-            }
-
-            if (status < 200 || status >= 300) {
-                return "[Bot HTTP " + status + ": " + resp + "]";
-            }
-
-            Pattern p = Pattern.compile("\"content\"\\s*:\\s*\"((?:\\\\\"|[^\"])*)\"");
-            Matcher m = p.matcher(resp.toString());
-            if (m.find()) {
-                return m.group(1)
-                        .replace("\\n", "\n")
-                        .replace("\\\"", "\"")
-                        .replace("\\\\", "\\");
-            } else {
-                return "[Bot error: no content field]";
-            }
-
-        } catch (IOException e) {
-            return "[Bot error: " + e.getMessage() + "]";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CompletableFuture.completedFuture("[Bot error: " + e.getMessage() + "]");
         }
     }
 
-    // JSON string escaper
-    private static String escapeJson(String text) {
-        return text.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
+    public CompletableFuture<String> askBotMention(String message){
+        try{
+            JSONArray messageArray = new JSONArray();
+            messageArray.put(new JSONObject()
+                    .put("role", "user")
+                    .put("content", message));
+            JSONObject payload = new JSONObject()
+                    .put("model", model)
+                    .put("messages", messageArray)
+                    .put("stream", false);
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + CHAT_ENDPOINT))
+                    .header("Content-Type", "application/json")
+                    .POST(BodyPublishers.ofString(payload.toString()))
+                    .build();
+            return http.sendAsync(req, BodyHandlers.ofString())
+                    .thenApply(resp -> {
+                        try {
+                            JSONObject body = new JSONObject(resp.body());
+                            JSONObject msg = body.getJSONObject("message");
+                            return msg.getString("content");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return "[Bot error: " + e.getMessage() + "]";
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CompletableFuture.completedFuture("[Bot error: " + e.getMessage() + "]");
+        }
     }
 }

@@ -1,6 +1,8 @@
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class ChatRoom {
     private final String name;
@@ -15,6 +17,30 @@ public class ChatRoom {
         this.isAI=isAI;
     }
 
+    private JSONArray getHistory() {
+        JSONArray history = new JSONArray();
+        for (String message : messages) {
+            String[] parts = message.split(": ", 2);
+            if (parts.length == 2) {
+                String sender = parts[0].trim();
+                String content = parts[1].trim();
+                JSONObject msg = new JSONObject();
+
+                if (sender.equalsIgnoreCase("Bot")) {
+                    msg.put("role", "assistant");
+                    msg.put("content", content);
+                } else {
+                    msg.put("role", "user");
+                    // Include username in content so bot "knows" who spoke
+                    msg.put("content", sender + " said: " + content);
+                }
+                history.put(msg);
+            }
+        }
+        return history;
+    }
+
+
     public void addUser(String username, BufferedReader in, PrintWriter out) throws IOException {
         ClientSession session = new ClientSession(username, out);
         lock.lock();
@@ -28,16 +54,18 @@ public class ChatRoom {
         }
 
         if (isAI) {
-            String intro = botClient.askBot(messages,
-                    "A new user named" + username + " just joined. Welcome the user. If anything was said summarize in 2 sentences what other users has been saying so far. If not just tell him he is the first. Do not say the new user said those things. I want a fast simple response");
-            String botLine = "Bot: " + intro;
-            lock.lock();
-            try {
-                messages.add(botLine);
-                broadcast(botLine);
-            } finally {
-                lock.unlock();
-            }
+            JSONArray history = getHistory();
+            botClient.askBotAsync(history, "A new user named " + username + " just joined. Welcome the user. If anything was said summarize in 2 sentences what other users has been saying so far. If not just tell him he is the first. I want a fast simple response")
+                    .thenAccept(intro -> {
+                        String botLine = "Bot: " + intro;
+                        lock.lock();
+                        try {
+                            messages.add(botLine);
+                            broadcast(botLine);
+                        } finally {
+                            lock.unlock();
+                        }
+                    });
         }
 
         String line;
@@ -54,6 +82,20 @@ public class ChatRoom {
                 broadcast(message);
             } finally {
                 lock.unlock();
+            }
+
+            if (line.toLowerCase().contains("@bot")){
+                botClient.askBotMention(line)
+                        .thenAccept(intro -> {
+                            String botLine = "Bot: " + intro;
+                            lock.lock();
+                            try {
+                                messages.add(botLine);
+                                broadcast(botLine);
+                            } finally {
+                                lock.unlock();
+                            }
+                        });
             }
         }
 
