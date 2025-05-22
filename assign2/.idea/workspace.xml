@@ -6,6 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="a74e2629-a5c2-46d5-8682-a8cfadad76fb" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client.cert" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client.keys" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/clientrsa.cert" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server.cert" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server.keys" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/serverrsa.cert" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/truststore" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +46,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;ssl&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/tomas/Desktop/CPD_Proj2/assign2&quot;,
@@ -84,11 +91,17 @@
       <workItem from="1747075472503" duration="4839000" />
       <workItem from="1747121872454" duration="369000" />
       <workItem from="1747310153337" duration="4169000" />
-      <workItem from="1747689244820" duration="692000" />
+      <workItem from="1747689244820" duration="2681000" />
+      <workItem from="1747727041319" duration="3232000" />
+      <workItem from="1747730473655" duration="1075000" />
+      <workItem from="1747732064969" duration="1747000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.bat" />
   </component>
 </project>
