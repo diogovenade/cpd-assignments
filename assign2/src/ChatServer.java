@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import javax.net.ssl.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
 
@@ -14,7 +15,6 @@ public class ChatServer {
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.err.println("Usage: java ChatServer <port>");
             return;
         }
 
@@ -28,11 +28,19 @@ public class ChatServer {
 
         loadUsers();
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+
+        try (SSLServerSocket serverSocket = (SSLServerSocket) ssf.createServerSocket(port)) {
+            String[] protos = { "TLSv1.3" };
+            serverSocket.setEnabledProtocols(protos);
+            String[] suites = { "TLS_AES_128_GCM_SHA256" };
+
+            serverSocket.setEnabledCipherSuites(suites);
+
             System.out.println("Chat server listening on port " + port);
 
             while (true) {
-                Socket socket = serverSocket.accept();
+                SSLSocket socket = (SSLSocket) serverSocket.accept();
                 Thread.startVirtualThread(() -> handleClient(socket));
             }
 

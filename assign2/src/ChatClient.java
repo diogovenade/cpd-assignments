@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import javax.net.ssl.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChatClient {
@@ -9,7 +10,6 @@ public class ChatClient {
 
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.err.println("Usage: java ChatClient <hostname> <port>");
             return;
         }
 
@@ -22,10 +22,23 @@ public class ChatClient {
             return;
         }
 
-        try (Socket socket = new Socket(hostname, port);
-             PrintWriter serverOut = new PrintWriter(socket.getOutputStream(), true);
-             BufferedReader serverIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             BufferedReader consoleIn = new BufferedReader(new InputStreamReader(System.in))) {
+        SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+
+        try (SSLSocket socket = (SSLSocket) ssf.createSocket();) {
+
+            String[] protos = { "TLSv1.3" };
+            socket.setEnabledProtocols(protos);
+            String[] suites = { "TLS_AES_128_GCM_SHA256" };
+
+            socket.setEnabledCipherSuites(suites);
+
+            SocketAddress srvrAddr = new InetSocketAddress(hostname, port);
+
+            socket.connect(srvrAddr);
+
+            PrintWriter serverOut = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader serverIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            BufferedReader consoleIn = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.println("Connected to chat server at " + hostname + ":" + port);
 
