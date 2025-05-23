@@ -4,7 +4,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.concurrent.CompletableFuture;
 
-import org.json.JSONArray;  // or your preferred JSON library
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class BotClient {
