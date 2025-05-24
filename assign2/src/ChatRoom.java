@@ -79,6 +79,9 @@ public class ChatRoom {
                 out.println("[You left the room]");
                 break;
             }
+            if (line.trim().isEmpty()) {
+                continue;
+            }
             String message = username + ": " + line;
             lock.lock();
             try {

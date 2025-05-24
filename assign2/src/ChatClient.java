@@ -100,6 +100,9 @@ public class ChatClient {
                                 running.set(false);
                                 break;
                             }
+                            if (userInput.trim().isEmpty()) {
+                                continue;
+                            }
                             serverOut.println(userInput);
                             if (serverOut.checkError()) {
                                 System.err.println("Error sending message. Server connection might be lost.");

@@ -5,3 +5,4 @@ mainAI:true
 main:false
 room1:false
 sala-do-alfredo:false
+room:false
