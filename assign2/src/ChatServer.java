@@ -27,6 +27,7 @@ public class ChatServer {
         }
 
         loadUsers();
+        loadRooms();
 
         SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
@@ -86,13 +87,20 @@ public class ChatServer {
 
                 boolean isAIRoom = roomName.startsWith("AI:");
                 ChatRoom room;
+                boolean created = false;
 
                 roomLock.lock();
                 try {
-                    room = rooms.computeIfAbsent(roomName, rn -> new ChatRoom(rn, isAIRoom));
+                    room = rooms.get(roomName);
+                    if (room == null) {
+                        room = new ChatRoom(roomName, isAIRoom);
+                        rooms.put(roomName, room);
+                        created = true;
+                    }
                 } finally {
                     roomLock.unlock();
                 }
+                if (created) saveRooms();
 
                 out.println("Entering room: " + roomName + (isAIRoom ? " (AI)" : ""));
                 out.println("Type '\\q' to exit this room.");
@@ -200,6 +208,46 @@ public class ChatServer {
             System.out.println("Users saved to users.txt");
         } catch (IOException e) {
             System.err.println("Failed to save users to users.txt: " + e.getMessage());
+        }
+    }
+
+    private static void loadRooms() {
+        File file = new File("rooms.txt");
+        if (!file.exists()) {
+            System.out.println("rooms.txt not found, starting with no pre-loaded rooms.");
+            return;
+        }
+
+        roomLock.lock();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(":", 2);
+                if (parts.length == 2) {
+                    String roomName = parts[0];
+                    boolean isAI = Boolean.parseBoolean(parts[1]);
+                    rooms.put(roomName, new ChatRoom(roomName, isAI));
+                }
+            }
+            System.out.println("Rooms loaded from rooms.txt");
+        } catch (IOException e) {
+            System.err.println("Failed to load rooms from rooms.txt: " + e.getMessage());
+        } finally {
+            roomLock.unlock();
+        }
+    }
+
+    private static void saveRooms() {
+        roomLock.lock();
+        try (PrintWriter pw = new PrintWriter(new FileWriter("rooms.txt"))) {
+            for (Map.Entry<String, ChatRoom> entry : rooms.entrySet()) {
+                pw.println(entry.getKey() + ":" + entry.getValue().isAI());
+            }
+            System.out.println("Rooms saved to rooms.txt");
+        } catch (IOException e) {
+            System.err.println("Failed to save rooms to rooms.txt: " + e.getMessage());
+        } finally {
+            roomLock.unlock();
         }
     }
 }

@@ -51,8 +51,19 @@ public class BotClient {
                     .thenApply(resp -> {
                         try {
                             JSONObject body = new JSONObject(resp.body());
-                            JSONObject msg = body.getJSONObject("message");
-                            return msg.getString("content");
+                            if (body.has("message")) {
+                                JSONObject msg = body.getJSONObject("message");
+                                return msg.getString("content");
+                            } else if (body.has("messages")) {
+                                JSONArray msgs = body.getJSONArray("messages");
+                                if (msgs.length() > 0) {
+                                    JSONObject lastMsg = msgs.getJSONObject(msgs.length() - 1);
+                                    return lastMsg.getString("content");
+                                }
+                            } else if (body.has("error")) {
+                                return "[Bot error: " + body.getString("error") + "]";
+                            }
+                            return "[Bot error: Unexpected response format]";
                         } catch (Exception e) {
                             e.printStackTrace();
                             return "[Bot error: " + e.getMessage() + "]";
@@ -84,8 +95,19 @@ public class BotClient {
                     .thenApply(resp -> {
                         try {
                             JSONObject body = new JSONObject(resp.body());
-                            JSONObject msg = body.getJSONObject("message");
-                            return msg.getString("content");
+                            if (body.has("message")) {
+                                JSONObject msg = body.getJSONObject("message");
+                                return msg.getString("content");
+                            } else if (body.has("messages")) {
+                                JSONArray msgs = body.getJSONArray("messages");
+                                if (msgs.length() > 0) {
+                                    JSONObject lastMsg = msgs.getJSONObject(msgs.length() - 1);
+                                    return lastMsg.getString("content");
+                                }
+                            } else if (body.has("error")) {
+                                return "[Bot error: " + body.getString("error") + "]";
+                            }
+                            return "[Bot error: Unexpected response format]";
                         } catch (Exception e) {
                             e.printStackTrace();
                             return "[Bot error: " + e.getMessage() + "]";

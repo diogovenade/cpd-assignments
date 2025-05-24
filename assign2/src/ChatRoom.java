@@ -17,6 +17,10 @@ public class ChatRoom {
         this.isAI=isAI;
     }
 
+    public boolean isAI() {
+        return isAI;
+    }
+
     private JSONArray getHistory() {
         JSONArray history = new JSONArray();
         for (String message : messages) {
