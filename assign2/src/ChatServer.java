@@ -95,6 +95,7 @@ public class ChatServer {
                 }
 
                 out.println("Entering room: " + roomName + (isAIRoom ? " (AI)" : ""));
+                out.println("Type '\\q' to exit this room.");
                 room.addUser(username, in, out);
 
                 out.println("Left room: " + roomName);
