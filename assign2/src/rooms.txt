@@ -1,2 +1,7 @@
-main:false
+sala do alfredo:false
+d:false
+fsdkla:false
 mainAI:true
+main:false
+room1:false
+sala-do-alfredo:false

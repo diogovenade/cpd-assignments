@@ -47,7 +47,6 @@ public class ChatClient {
             System.out.print("Enter authentication ('<username> <password>' or 'TOKEN: <your_token>'): ");
             String authInput = consoleIn.readLine();
             serverOut.println(authInput);
-
             String authResponse = serverIn.readLine();
             System.out.println("Server: " + authResponse);
 
@@ -63,14 +62,16 @@ public class ChatClient {
                 return;
             }
 
+            // --- Room List ---
+            String line;
+            while ((line = serverIn.readLine()) != null) {
+                if (line.equals("END_OF_ROOMS")) break;
+                System.out.println("Server: " + line);
+            }
+
             // --- Room Selection / Chatting ---
             while (running.get()) {
-                String serverPrompt = serverIn.readLine();
-                if (serverPrompt == null) {
-                    System.out.println("Server disconnected unexpectedly.");
-                    break;
-                }
-                System.out.println("Server: " + serverPrompt);
+                System.out.println("Server: " + serverIn.readLine());
                 System.out.print("> ");
                 String roomInput = consoleIn.readLine();
 
