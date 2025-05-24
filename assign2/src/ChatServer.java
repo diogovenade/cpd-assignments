@@ -72,6 +72,21 @@ public class ChatServer {
 
             out.println("Authenticated successfully as " + username + ".");
 
+            roomLock.lock();
+            try {
+                if (rooms.isEmpty()) {
+                    out.println("No rooms available. You can create a new one by entering a name or you can join an AI room by entering 'AI:<room_name>'.");
+                } else {
+                    out.println("Available rooms:");
+                    for (String roomName : rooms.keySet()) {
+                        out.println(" - " + roomName + (rooms.get(roomName).isAI() ? " (AI)" : ""));
+                    }
+                }
+                out.println("END_OF_ROOMS");
+            } finally {
+                roomLock.unlock();
+            }
+
             while (true) {
                 out.println("Enter room name to join, or type 'exit' to quit:");
                 String roomName = in.readLine();
