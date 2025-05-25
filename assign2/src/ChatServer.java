@@ -79,9 +79,10 @@ public class ChatServer {
             String userToken = usernameAndToken[1];
 
             out.println("Authenticated successfully as " + username + ".");
+            showRoomList(out);
             
             // Check if user has a previous room to resume
-            String lastRoom = null;
+            String lastRoom;
             tokenRoomLock.lock();
             try {
                 lastRoom = tokenToRoom.get(userToken);
@@ -89,11 +90,9 @@ public class ChatServer {
                 tokenRoomLock.unlock();
             }
             
-            boolean hasResumedRoom = false;
-            
             if (lastRoom != null) {
                 roomLock.lock();
-                ChatRoom room = null;
+                ChatRoom room;
                 try {
                     room = rooms.get(lastRoom);
                 } finally {
@@ -102,52 +101,8 @@ public class ChatServer {
                 
                 if (room != null) {
                     out.println("Previous session found in room: " + lastRoom);
-                    showRoomList(out);
-                    
-                    out.println("Enter room name to join, or press Enter to rejoin '" + lastRoom + "', or type 'exit' to quit:");
-                    String input = in.readLine();
-                    
-                    if (input != null && !input.trim().isEmpty() && !input.equalsIgnoreCase("exit")) {
-                        processRoomJoin(input, username, userToken, in, out);
-                        hasResumedRoom = true;
-                    } else if (input == null || input.equalsIgnoreCase("exit")) {
-                        return;
-                    } else {
-                        tokenRoomLock.lock();
-                        try {
-                            tokenToRoom.put(userToken, lastRoom);
-                        } finally {
-                            tokenRoomLock.unlock();
-                        }
-                        
-                        out.println("Entering room: " + lastRoom + (room.isAI() ? " (AI)" : ""));
-                        out.println("Type '\\q' to exit this room.");
-                        room.addUser(username, in, out);
-                        out.println("Left room: " + lastRoom);
-                        hasResumedRoom = true;
-                    }
-                } else {
-                    showRoomList(out);
+                    processRoomJoin(lastRoom, username, userToken, in, out);
                 }
-            } else {
-                showRoomList(out);
-            }
-
-            while (!hasResumedRoom) {
-                out.println("Enter room name to join, or type 'exit' to quit:");
-                String roomName = in.readLine();
-
-                if (roomName == null || roomName.equalsIgnoreCase("exit")) {
-                    break;
-                }
-
-                if (roomName.trim().isEmpty()) {
-                    out.println("Room name cannot be empty.");
-                    continue;
-                }
-
-                processRoomJoin(roomName, username, userToken, in, out);
-                hasResumedRoom = true;
             }
 
             while (true) {
@@ -191,8 +146,7 @@ public class ChatServer {
             roomLock.unlock();
         }
         if (created) saveRooms();
-        
-        // Store the user's current room with their token
+
         tokenRoomLock.lock();
         try {
             tokenToRoom.put(userToken, roomName);

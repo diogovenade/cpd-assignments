@@ -74,16 +74,19 @@ public class ChatClient {
 
             // --- Room Selection / Chatting ---
             while (running.get()) {
-                System.out.println("Server: " + serverIn.readLine());
-                System.out.print("> ");
-                String roomInput = consoleIn.readLine();
+                String in = serverIn.readLine();
+                System.out.println("Server: " + in);
+                if (!in.startsWith("Previous session found in")) {
+                    System.out.print("> ");
+                    String roomInput = consoleIn.readLine();
 
-                if (roomInput == null || roomInput.equalsIgnoreCase("exit")) {
-                    serverOut.println("exit");
-                    break;
+                    if (roomInput == null || roomInput.equalsIgnoreCase("exit")) {
+                        serverOut.println("exit");
+                        break;
+                    }
+
+                    serverOut.println(roomInput);
                 }
-
-                serverOut.println(roomInput);
 
                 String roomResponse = serverIn.readLine();
                 if (roomResponse == null) {

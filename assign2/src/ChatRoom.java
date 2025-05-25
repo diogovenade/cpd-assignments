@@ -106,7 +106,6 @@ public class ChatRoom {
             }
         }
 
-        // once loop exits, clean up
         removeUser(session);
     }
 
