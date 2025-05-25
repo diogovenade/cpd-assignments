@@ -54,7 +54,7 @@ public class ChatServer {
     }
 
     private static void handleClient(Socket socket) {
-        String username = null; // Track username for disconnect message
+        String username = null; // for disconnect message
         try (socket;
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
