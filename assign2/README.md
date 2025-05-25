@@ -45,3 +45,8 @@ To unblock the connection:
 ```shell
 sudo iptables -D OUTPUT -p tcp --dport 12345 -j DROP
 ```
+
+## Interrupting the Client
+When the user logs in with credentials (username and password), they get a token. If the client is interrupted
+(with Ctrl+C, for example), they can login again with the token from the previous session and they will automatically
+rejoin the room they were in.
