@@ -22,8 +22,33 @@ public class ChatClient {
             return;
         }
 
-        SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        BufferedReader consoleIn = new BufferedReader(new InputStreamReader(System.in));
+        while (true) {
+            running.set(true);
+            boolean reconnect = false;
+            try {
+                reconnect = !runClient(hostname, port, consoleIn);
+            } catch (Exception e) {
+                System.err.println("Unexpected error: " + e.getMessage());
+                reconnect = true;
+            }
+            if (!reconnect) break;
+            System.out.print("Connection lost. Try to reconnect? (y/n): ");
+            try {
+                String resp = consoleIn.readLine();
+                if (resp == null || !resp.trim().toLowerCase().startsWith("y")) {
+                    break;
+                }
+            } catch (IOException e) {
+                break;
+            }
+            System.out.println("Reconnecting...");
+        }
+        System.out.println("Client shutting down.");
+    }
 
+    private static boolean runClient(String hostname, int port, BufferedReader consoleIn) {
+        SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
         try (SSLSocket socket = (SSLSocket) ssf.createSocket();) {
 
             String[] protos = { "TLSv1.3" };
@@ -38,19 +63,25 @@ public class ChatClient {
 
             PrintWriter serverOut = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader serverIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            BufferedReader consoleIn = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.println("Connected to chat server at " + hostname + ":" + port);
+            System.out.println("Client local port: " + socket.getLocalPort()); // <-- print local port
 
             // --- Authentication ---
             String authResponse;
             do {
                 System.out.println("Server: " + serverIn.readLine());
-                System.out.print("Enter authentication ('<username> <password>' or 'TOKEN: <your_token>'): ");
-                String authInput = consoleIn.readLine();
-                if (authInput == null) {
-                    System.err.println("No authentication input provided. Exiting.");
-                    return;
+                String authInput;
+                if (sessionToken != null) {
+                    System.out.println("Using stored session token.");
+                    authInput = "TOKEN: " + sessionToken;
+                } else {
+                    System.out.print("Enter authentication ('<username> <password>' or 'TOKEN: <your_token>'): ");
+                    authInput = consoleIn.readLine();
+                    if (authInput == null) {
+                        System.err.println("No authentication input provided. Exiting.");
+                        return false;
+                    }
                 }
                 serverOut.println(authInput);
                 authResponse = serverIn.readLine();
@@ -75,6 +106,10 @@ public class ChatClient {
             // --- Room Selection / Chatting ---
             while (running.get()) {
                 String in = serverIn.readLine();
+                if (in == null) {
+                    System.out.println("Server disconnected unexpectedly.");
+                    return true; // trigger reconnect
+                }
                 System.out.println("Server: " + in);
                 if (!in.startsWith("Previous session found in")) {
                     System.out.print("> ");
@@ -91,7 +126,7 @@ public class ChatClient {
                 String roomResponse = serverIn.readLine();
                 if (roomResponse == null) {
                     System.out.println("Server disconnected unexpectedly.");
-                    break;
+                    return true; // trigger reconnect
                 }
                 System.out.println("Server: " + roomResponse);
 
@@ -136,12 +171,12 @@ public class ChatClient {
 
         } catch (UnknownHostException e) {
             System.err.println("Error: Unknown host " + hostname);
+            return false;
         } catch (IOException e) {
             System.err.println("Error connecting to or communicating with server: " + e.getMessage());
-            // e.printStackTrace();
-        } finally {
-            System.out.println("Client shutting down.");
+            return true; // trigger reconnect
         }
+        return false;
     }
 
     private static void readServerMessages(BufferedReader serverIn) {
