@@ -43,24 +43,27 @@ public class ChatClient {
             System.out.println("Connected to chat server at " + hostname + ":" + port);
 
             // --- Authentication ---
-            System.out.println("Server: " + serverIn.readLine());
-            System.out.print("Enter authentication ('<username> <password>' or 'TOKEN: <your_token>'): ");
-            String authInput = consoleIn.readLine();
-            serverOut.println(authInput);
-            String authResponse = serverIn.readLine();
-            System.out.println("Server: " + authResponse);
-
-            if (authResponse != null && authResponse.startsWith("TOKEN:")) {
-                sessionToken = authResponse.substring(6);
-                System.out.println("(Session token stored for potential future use)");
+            String authResponse;
+            do {
+                System.out.println("Server: " + serverIn.readLine());
+                System.out.print("Enter authentication ('<username> <password>' or 'TOKEN: <your_token>'): ");
+                String authInput = consoleIn.readLine();
+                if (authInput == null) {
+                    System.err.println("No authentication input provided. Exiting.");
+                    return;
+                }
+                serverOut.println(authInput);
                 authResponse = serverIn.readLine();
                 System.out.println("Server: " + authResponse);
-            }
 
-            if (authResponse == null || !authResponse.startsWith("Authenticated successfully")) {
-                System.err.println("Authentication failed. Exiting.");
-                return;
-            }
+                if (authResponse != null && authResponse.startsWith("TOKEN:")) {
+                    sessionToken = authResponse.substring(6);
+                    System.out.println("(Session token stored for potential future use)");
+                    authResponse = serverIn.readLine();
+                    System.out.println("Server: " + authResponse);
+                }
+
+            } while (authResponse == null || !authResponse.startsWith("Authenticated successfully"));
 
             // --- Room List ---
             String line;

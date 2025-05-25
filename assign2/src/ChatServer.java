@@ -49,7 +49,7 @@ public class ChatServer {
 
         } catch (IOException e) {
             System.err.println("Server error: " + e.getMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -58,23 +58,26 @@ public class ChatServer {
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
-            out.println("Welcome to the server! Authenticate using 'TOKEN: <your_token>' or '<username> <password>'.");
-            String tokenOrCreds = in.readLine();
+            String tokenOrCreds;
+            String[] usernameAndToken;
+            while (true) {
+                out.println("Welcome to the server! Authenticate using 'TOKEN: <your_token>' or '<username> <password>'.");
+                tokenOrCreds = in.readLine();
 
-            if (tokenOrCreds == null) {
-                System.out.println("Client provided no authentication string. Closing connection.");
-                return;
+                if (tokenOrCreds == null) {
+                    continue;
+                }
+
+                usernameAndToken = authenticate(tokenOrCreds, out);
+                if (usernameAndToken == null) {
+                    continue;
+                }
+                break;
             }
 
-            String[] usernameAndToken = authenticate(tokenOrCreds, out);
-            if (usernameAndToken == null) {
-                System.out.println("Authentication failed for a client. Closing connection.");
-                return;
-            }
-            
             String username = usernameAndToken[0];
             String userToken = usernameAndToken[1];
-            
+
             out.println("Authenticated successfully as " + username + ".");
             
             // Check if user has a previous room to resume
@@ -221,8 +224,8 @@ public class ChatServer {
     }
 
     private static String[] authenticate(String input, PrintWriter out) {
-        String username = null;
-        String token = null;
+        String username;
+        String token;
         
         if (input.startsWith("TOKEN:")) {
             token = input.substring(6).trim();
