@@ -1,27 +1,9 @@
 # CPD Projects
 
-CPD Projects of group T&lt;m&gt;&lt;n&gt;G&lt;p&gt;&lt;q&gt;.
+CPD Projects of group T06G15.
 
 Group members:
 
-1. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-2. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-3. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-4. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-
-
-#
-### Compiling
-```bash
-javac -cp ../json-20240303.jar BotClient.java ChatClient.java ChatRoom.java ChatServer.java
-```
-###
-### Running
-#### Server
-```bash
-java -cp .:../json-20240303.jar ChatServer 5000
-```
-#### Client
-```bash
-java -cp .:../json-20240303.jar ChatClient localhost 5000
-```
+1. Diogo Maria Santos Venade (up202207805@up.pt)
+2. Daniel Costa Basílio (up201806838@up.pt)
+3. Miguel Tomás Vieira Rodrigues (up202205749@up.pt)
