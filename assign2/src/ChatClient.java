@@ -23,23 +23,25 @@ public class ChatClient {
         }
 
         BufferedReader consoleIn = new BufferedReader(new InputStreamReader(System.in));
+        boolean userRequestedExit = false;
         while (true) {
             running.set(true);
             boolean reconnect = false;
             try {
                 reconnect = !runClient(hostname, port, consoleIn);
+            } catch (UserExitException e) {
+                userRequestedExit = true;
+                break;
             } catch (Exception e) {
                 System.err.println("Unexpected error: " + e.getMessage());
                 reconnect = true;
             }
-            if (!reconnect) break;
-            System.out.print("Connection lost. Try to reconnect? (y/n): ");
+            if (userRequestedExit) break;
+            // Always retry, never break the loop unless user requested exit
+            System.out.println("Connection lost or failed. Retrying in 2 seconds...");
             try {
-                String resp = consoleIn.readLine();
-                if (resp == null || !resp.trim().toLowerCase().startsWith("y")) {
-                    break;
-                }
-            } catch (IOException e) {
+                Thread.sleep(2000);
+            } catch (InterruptedException ie) {
                 break;
             }
             System.out.println("Reconnecting...");
@@ -47,7 +49,7 @@ public class ChatClient {
         System.out.println("Client shutting down.");
     }
 
-    private static boolean runClient(String hostname, int port, BufferedReader consoleIn) {
+    private static boolean runClient(String hostname, int port, BufferedReader consoleIn) throws UserExitException {
         SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
         try (SSLSocket socket = (SSLSocket) ssf.createSocket();) {
 
@@ -65,16 +67,18 @@ public class ChatClient {
             BufferedReader serverIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             System.out.println("Connected to chat server at " + hostname + ":" + port);
-            System.out.println("Client local port: " + socket.getLocalPort()); // <-- print local port
+            System.out.println("Client local port: " + socket.getLocalPort());
 
             // --- Authentication ---
             String authResponse;
+            boolean triedToken = false;
             do {
                 System.out.println("Server: " + serverIn.readLine());
                 String authInput;
-                if (sessionToken != null) {
+                if (sessionToken != null && !triedToken) {
                     System.out.println("Using stored session token.");
                     authInput = "TOKEN: " + sessionToken;
+                    triedToken = true;
                 } else {
                     System.out.print("Enter authentication ('<username> <password>' or 'TOKEN: <your_token>'): ");
                     authInput = consoleIn.readLine();
@@ -92,6 +96,11 @@ public class ChatClient {
                     System.out.println("(Session token stored for potential future use)");
                     authResponse = serverIn.readLine();
                     System.out.println("Server: " + authResponse);
+                }
+
+                // If token was invalid, clear it so user is prompted next time
+                if (triedToken && (authResponse == null || authResponse.toLowerCase().contains("invalid"))) {
+                    sessionToken = null;
                 }
 
             } while (authResponse == null || !authResponse.startsWith("Authenticated successfully"));
@@ -117,7 +126,7 @@ public class ChatClient {
 
                     if (roomInput == null || roomInput.equalsIgnoreCase("exit")) {
                         serverOut.println("exit");
-                        break;
+                        throw new UserExitException(); // Ensure main loop breaks and does not reconnect
                     }
 
                     serverOut.println(roomInput);
@@ -171,7 +180,9 @@ public class ChatClient {
 
         } catch (UnknownHostException e) {
             System.err.println("Error: Unknown host " + hostname);
-            return false;
+            return true; // always trigger reconnect
+        } catch (UserExitException e) {
+            throw e; // propagate to main to break the loop
         } catch (IOException e) {
             System.err.println("Error connecting to or communicating with server: " + e.getMessage());
             return true; // trigger reconnect
@@ -195,4 +206,6 @@ public class ChatClient {
 
         }
     }
+
+    private static class UserExitException extends Exception {}
 }

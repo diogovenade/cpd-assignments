@@ -29,7 +29,7 @@ sed -i 's/\r$//' run_server.sh
 ```
 
 ## Connecting as a client
-After running the client script, you are prompted to authenticate. Insert your username and password, or token:
+After running the client script, you are prompted to authenticate. Insert your username and password, or token, in the indicated format:
 ```
 Connected to chat server at localhost:12345
 Server: Welcome to the server! Authenticate using 'TOKEN: <your_token>' or '<username> <password>'.
@@ -37,14 +37,31 @@ Enter authentication ('<username> <password>' or 'TOKEN: <your_token>'): alfredo
 ```
 
 ## Blocking the TCP connection
-If you want to interrupt the TCP connection at the specified port, for testing purposes, you can run the following command on a Linux terminal:
+If you want to block the TCP connection at the client's local port, you can run the following command on a Linux terminal
+(replacing 12606 with the client's local port number):
 ```shell
-sudo iptables -A OUTPUT -p tcp --dport 12345 -j DROP
+sudo iptables -A OUTPUT -p tcp --sport 12606 -j REJECT --reject-with tcp-reset
 ```
 To unblock the connection:
 ```shell
-sudo iptables -D OUTPUT -p tcp --dport 12345 -j DROP
+sudo iptables -D OUTPUT -p tcp --sport 12606 -j REJECT --reject-with tcp-reset
 ```
+
+If you want to block the TCP connection at the server's port, run this command instead (replacing 12345 with the
+server's port):
+```shell
+sudo iptables -A OUTPUT -p tcp --dport 12345 -j REJECT --reject-with tcp-reset
+```
+
+To unblock the connection:
+```shell
+sudo iptables -D OUTPUT -p tcp --dport 12345 -j REJECT --reject-with tcp-reset
+```
+
+When either the client's local port or the server's port is blocked, the client will attempt to reconnect after
+the user tries sending a message or entering a room, for instance. In the former case, the reconnection should work
+at the first try, as it is only required for the OS to change the client's local port. In the latter case, however,
+the reconnection will only work once the server's port is unblocked.
 
 ## Interrupting the Client
 When the user logs in with credentials (username and password), they get a token. If the client is interrupted

@@ -1,4 +1,3 @@
-alfredo:123
+diogo:123
 miguel:123
-ze:123
-manel:123
+daniel:123

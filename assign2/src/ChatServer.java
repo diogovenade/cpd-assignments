@@ -54,6 +54,7 @@ public class ChatServer {
     }
 
     private static void handleClient(Socket socket) {
+        String username = null; // Track username for disconnect message
         try (socket;
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
@@ -75,7 +76,7 @@ public class ChatServer {
                 break;
             }
 
-            String username = usernameAndToken[0];
+            username = usernameAndToken[0];
             String userToken = usernameAndToken[1];
 
             out.println("Authenticated successfully as " + username + ".");
@@ -124,7 +125,11 @@ public class ChatServer {
         } catch (IOException e) {
             System.out.println("Client connection dropped or error: " + e.getMessage());
         } finally {
-            System.out.println("Client disconnected.");
+            if (username != null) {
+                System.out.println("[" + username + "] disconnected.");
+            } else {
+                System.out.println("Client disconnected.");
+            }
         }
     }
     
