@@ -107,7 +107,8 @@ public class ChatServer {
             }
 
             while (true) {
-                out.println("Enter room name to join, or type 'exit' to quit:");
+                out.println("Enter room name to join, or type 'exit' to quit. To create a new room, enter" +
+                        " a name not in use. To create an AI room, add 'AI:' before the name");
                 String roomName = in.readLine();
 
                 if (roomName == null || roomName.equalsIgnoreCase("exit")) {

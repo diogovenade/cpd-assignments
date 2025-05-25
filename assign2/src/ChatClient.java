@@ -202,7 +202,7 @@ public class ChatClient {
             }
         } finally {
             running.set(false);
-            System.out.println("(Server listener thread stopped. Press Enter to exit if needed.)");
+            System.out.println("(Server listener thread stopped. Press Enter to reconnect.)");
 
         }
     }
