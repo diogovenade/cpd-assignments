@@ -1,8 +1,6 @@
-sala do alfredo:false
-d:false
-fsdkla:false
-mainAI:true
-main:false
-room1:false
-sala-do-alfredo:false
 room:false
+roomAI:true
+room1:false
+room2:false
+room3:false
+room4:false

@@ -9,9 +9,11 @@ public class ChatServer {
     private static final Map<String, String> users = new HashMap<>();
     private static final Map<String, ChatRoom> rooms = new HashMap<>();
     private static final Map<String, String> tokens = new HashMap<>();
+    private static final Map<String, String> tokenToRoom = new HashMap<>(); // Maps tokens to last room
     private static final Lock userLock = new ReentrantLock();
     private static final Lock roomLock = new ReentrantLock();
     private static final Lock tokenLock = new ReentrantLock();
+    private static final Lock tokenRoomLock = new ReentrantLock();
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -64,27 +66,85 @@ public class ChatServer {
                 return;
             }
 
-            String username = authenticate(tokenOrCreds, out);
-            if (username == null) {
+            String[] usernameAndToken = authenticate(tokenOrCreds, out);
+            if (usernameAndToken == null) {
                 System.out.println("Authentication failed for a client. Closing connection.");
                 return;
             }
-
+            
+            String username = usernameAndToken[0];
+            String userToken = usernameAndToken[1];
+            
             out.println("Authenticated successfully as " + username + ".");
-
-            roomLock.lock();
+            
+            // Check if user has a previous room to resume
+            String lastRoom = null;
+            tokenRoomLock.lock();
             try {
-                if (rooms.isEmpty()) {
-                    out.println("No rooms available. You can create a new one by entering a name or you can join an AI room by entering 'AI:<room_name>'.");
-                } else {
-                    out.println("Available rooms:");
-                    for (String roomName : rooms.keySet()) {
-                        out.println(" - " + roomName + (rooms.get(roomName).isAI() ? " (AI)" : ""));
-                    }
-                }
-                out.println("END_OF_ROOMS");
+                lastRoom = tokenToRoom.get(userToken);
             } finally {
-                roomLock.unlock();
+                tokenRoomLock.unlock();
+            }
+            
+            boolean hasResumedRoom = false;
+            
+            if (lastRoom != null) {
+                roomLock.lock();
+                ChatRoom room = null;
+                try {
+                    room = rooms.get(lastRoom);
+                } finally {
+                    roomLock.unlock();
+                }
+                
+                if (room != null) {
+                    out.println("Previous session found in room: " + lastRoom);
+                    showRoomList(out);
+                    
+                    out.println("Enter room name to join, or press Enter to rejoin '" + lastRoom + "', or type 'exit' to quit:");
+                    String input = in.readLine();
+                    
+                    if (input != null && !input.trim().isEmpty() && !input.equalsIgnoreCase("exit")) {
+                        processRoomJoin(input, username, userToken, in, out);
+                        hasResumedRoom = true;
+                    } else if (input == null || input.equalsIgnoreCase("exit")) {
+                        return;
+                    } else {
+                        tokenRoomLock.lock();
+                        try {
+                            tokenToRoom.put(userToken, lastRoom);
+                        } finally {
+                            tokenRoomLock.unlock();
+                        }
+                        
+                        out.println("Entering room: " + lastRoom + (room.isAI() ? " (AI)" : ""));
+                        out.println("Type '\\q' to exit this room.");
+                        room.addUser(username, in, out);
+                        out.println("Left room: " + lastRoom);
+                        hasResumedRoom = true;
+                    }
+                } else {
+                    showRoomList(out);
+                }
+            } else {
+                showRoomList(out);
+            }
+
+            while (!hasResumedRoom) {
+                out.println("Enter room name to join, or type 'exit' to quit:");
+                String roomName = in.readLine();
+
+                if (roomName == null || roomName.equalsIgnoreCase("exit")) {
+                    break;
+                }
+
+                if (roomName.trim().isEmpty()) {
+                    out.println("Room name cannot be empty.");
+                    continue;
+                }
+
+                processRoomJoin(roomName, username, userToken, in, out);
+                hasResumedRoom = true;
             }
 
             while (true) {
@@ -100,28 +160,7 @@ public class ChatServer {
                     continue;
                 }
 
-                boolean isAIRoom = roomName.startsWith("AI:");
-                ChatRoom room;
-                boolean created = false;
-
-                roomLock.lock();
-                try {
-                    room = rooms.get(roomName);
-                    if (room == null) {
-                        room = new ChatRoom(roomName, isAIRoom);
-                        rooms.put(roomName, room);
-                        created = true;
-                    }
-                } finally {
-                    roomLock.unlock();
-                }
-                if (created) saveRooms();
-
-                out.println("Entering room: " + roomName + (isAIRoom ? " (AI)" : ""));
-                out.println("Type '\\q' to exit this room.");
-                room.addUser(username, in, out);
-
-                out.println("Left room: " + roomName);
+                processRoomJoin(roomName, username, userToken, in, out);
             }
 
         } catch (IOException e) {
@@ -130,25 +169,78 @@ public class ChatServer {
             System.out.println("Client disconnected.");
         }
     }
+    
+    private static void processRoomJoin(String roomName, String username, String userToken, 
+                                       BufferedReader in, PrintWriter out) throws IOException {
+        boolean isAIRoom = roomName.startsWith("AI:");
+        ChatRoom room;
+        boolean created = false;
 
-    private static String authenticate(String input, PrintWriter out) {
+        roomLock.lock();
+        try {
+            room = rooms.get(roomName);
+            if (room == null) {
+                room = new ChatRoom(roomName, isAIRoom);
+                rooms.put(roomName, room);
+                created = true;
+            }
+        } finally {
+            roomLock.unlock();
+        }
+        if (created) saveRooms();
+        
+        // Store the user's current room with their token
+        tokenRoomLock.lock();
+        try {
+            tokenToRoom.put(userToken, roomName);
+        } finally {
+            tokenRoomLock.unlock();
+        }
+
+        out.println("Entering room: " + roomName + (isAIRoom ? " (AI)" : ""));
+        out.println("Type '\\q' to exit this room.");
+        room.addUser(username, in, out);
+        out.println("Left room: " + roomName);
+    }
+
+    private static void showRoomList(PrintWriter out) {
+        roomLock.lock();
+        try {
+            if (rooms.isEmpty()) {
+                out.println("No rooms available. You can create a new one by entering a name or you can join an AI room by entering 'AI:<room_name>'.");
+            } else {
+                out.println("Available rooms:");
+                for (String roomName : rooms.keySet()) {
+                    out.println(" - " + roomName + (rooms.get(roomName).isAI() ? " (AI)" : ""));
+                }
+            }
+            out.println("END_OF_ROOMS");
+        } finally {
+            roomLock.unlock();
+        }
+    }
+
+    private static String[] authenticate(String input, PrintWriter out) {
+        String username = null;
+        String token = null;
+        
         if (input.startsWith("TOKEN:")) {
-            String tokenValue = input.substring(6).trim();
-            if (tokenValue.isEmpty()) {
+            token = input.substring(6).trim();
+            if (token.isEmpty()) {
                 out.println("Invalid token format.");
                 return null;
             }
             tokenLock.lock();
             try {
-                String username = tokens.get(tokenValue);
+                username = tokens.get(token);
                 if (username == null) {
                     out.println("Invalid or expired token.");
                     return null;
                 }
-                return username;
             } finally {
                 tokenLock.unlock();
             }
+            return new String[] {username, token};
         }
 
         String[] parts = input.split(" ", 2);
@@ -157,7 +249,7 @@ public class ChatServer {
             return null;
         }
 
-        String username = parts[0];
+        username = parts[0];
         String password = parts[1];
 
         if (username.isEmpty() || password.isEmpty()) {
@@ -179,16 +271,16 @@ public class ChatServer {
             userLock.unlock();
         }
 
-        String generatedToken = UUID.randomUUID().toString();
+        token = UUID.randomUUID().toString();
         tokenLock.lock();
         try {
-            tokens.put(generatedToken, username);
+            tokens.put(token, username);
         } finally {
             tokenLock.unlock();
         }
-        out.println("TOKEN:" + generatedToken);
+        out.println("TOKEN:" + token);
 
-        return username;
+        return new String[] {username, token};
     }
 
     private static void loadUsers() {
